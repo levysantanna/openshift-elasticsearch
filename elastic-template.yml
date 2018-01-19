@@ -48,7 +48,7 @@ objects:
     output:
       to:
         kind: ImageStreamTag
-        name: 'openshift-elasticsearch:latest'
+        name: 'elasticsearch:latest'
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
@@ -118,23 +118,23 @@ parameters:
   description: Elasticsearch service name
   required: true
   value: elasticsearch
-- name: ELASTICSEARCH_MAX_MEMORY
+- name: ES_MAX_MEMORY
   description: "Max memory Elasticsearch will use (format is [value][M|G])"
   required: true
   value: 1G
-- name: ELASTICSEARCH_CLUSTER_NAME
+- name: ES_CLUSTER_NAME
   description: Elasticsearch cluster name
   required: true
   value: liferay_cluster
-- name: ELASTICSEARCH_LOG_LEVEL
+- name: ES_LOG_LEVEL
   description: Elasticsearch log level
   required: true
   value: INFO
 - name: GIT_BRANCH
-  description: "Branch of git repo"
+  description: "Branch of Git repo"
   required: true
   value: "6.1.2"
 - name: GIT_URL
-  description: "Branch of git repo"
+  description: "URL of Git repo"
   required: true
   value: "https://github.com/levysantanna/openshift-elasticsearch.git"
