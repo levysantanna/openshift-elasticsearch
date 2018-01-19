@@ -21,7 +21,7 @@ RUN mkdir -p ${INSTALLDIR} && mkdir -p ${INSTALLDIR}/logs/ && \
 RUN useradd elastic && \
     chown -R elastic ${INSTALLDIR}
 
-ONBUILD USER elastic
+USER elastic
 
 # COPY configurations files
 ONBUILD COPY config/ ${INSTALLDIR}/config/
