@@ -1,0 +1,140 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: elasticsearch-ephemeral
+metadata:
+  name: elasticsearch-ephemeral
+  annotations:
+    description: Template for Elasticsearch for Openshift.
+    iconClass: icon-elasticsearch
+    tags: elasticsearch,ephemeral,database,search
+objects:
+- kind: Service
+  apiVersion: v1
+  metadata:
+    annotations:
+      description: Exposes the Elasticsearch server
+    name: ${NAME}
+  spec:
+    ports:
+    - name: elasticsearch
+      port: 9200
+      targetPort: 9200
+    - name: elasticsearch-cluster
+      port: 9300
+      targetPort: 9300
+    selector:
+      name: ${NAME}
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: elasticsearch
+    creationTimestamp: null
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: elasticsearch
+    labels:
+      app: elasticsearch
+  spec:
+    source:
+      type: Git
+      git:
+        uri: ${GIT_URL}
+        ref: ${GIT_BRANCH}
+      contextDir: docker
+    strategy:
+      type: Source
+    output:
+      to:
+        kind: ImageStreamTag
+        name: 'openshift-elasticsearch:latest'
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    creationTimestamp: null
+    name: ${NAME}
+    annotations:
+      iconClass: icon-elasticsearch
+  spec:
+    replicas: 1
+    selector:
+      name: ${NAME}
+    strategy:
+      resources: {}
+      type: Recreate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          name: ${NAME}
+      spec:
+        containers:
+        - capabilities: {}
+          env:
+          - name: ES_SERVICE_NAME
+            value: ${NAME}
+          - name: ES_MAX_MEMORY
+            value: ${ES_MAX_MEMORY}
+          - name: ES_CLUSTER_NAME
+            value: ${ES_CLUSTER_NAME}
+          - name: ES_LOG_LEVEL
+            value: ${ES_LOG_LEVEL}
+          image: elasticsearch
+          imagePullPolicy: IfNotPresent
+          name: elasticsearch
+          ports:
+          - containerPort: 9200
+            protocol: TCP
+          - containerPort: 9300
+            protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities: {}
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          resources:
+            limits:
+              cpu: 293m
+              memory: 1024M
+            requests:
+              cpu: 146m
+              memory: 512M
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - elasticsearch
+        from:
+          kind: ImageStreamTag
+          name: elasticsearch:latest
+
+parameters:
+- name: NAME
+  description: Elasticsearch service name
+  required: true
+  value: elasticsearch
+- name: ELASTICSEARCH_MAX_MEMORY
+  description: "Max memory Elasticsearch will use (format is [value][M|G])"
+  required: true
+  value: 1G
+- name: ELASTICSEARCH_CLUSTER_NAME
+  description: Elasticsearch cluster name
+  required: true
+  value: liferay_cluster
+- name: ELASTICSEARCH_LOG_LEVEL
+  description: Elasticsearch log level
+  required: true
+  value: INFO
+- name: GIT_BRANCH
+  description: "Branch of git repo"
+  required: true
+  value: "6.1.2"
+- name: GIT_URL
+  description: "Branch of git repo"
+  required: true
+  value: "https://github.com/levysantanna/openshift-elasticsearch.git"
